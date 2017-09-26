@@ -28,7 +28,7 @@ import Data.Word (Word)
 import Data.Ratio ((%))
 import Data.Foldable (foldl')
 
--- We use 'Word' here not 'Bool' because it unpacks. I'm not sure if this is an optimisation.
+-- We use 'Word' here not 'Bool' because it unpacks bette. I'm not sure if this is an optimisation.
 newtype Sign = Sign Word deriving Show
 
 pattern Pos = Sign 0
@@ -187,19 +187,19 @@ instance KnownNat n => Num (FastMult n) where
         size -> FastMult sign 1 (singletonStrictList (BigNatWithScale (logBase2Int size) x))
       logBase2Int :: Word -> Word
       logBase2Int x = WORD_SIZE_IN_BITS - 1 - (fromIntegral (countLeadingZeros x))
-  (FastMult s1 w1 l1) * (FastMult s2 w2 l2) =
+  (FastMult sign1 w1 l1) * (FastMult sign2 w2 l2) =
     let
       multBigNatWithScale :: forall n. BigNatWithScale n -> BigNatWithScale n -> BigNatMultResult n
-      multBigNatWithScale (BigNatWithScale s1 n1) (BigNatWithScale s2 n2) =
-          case (s1 `compare` s2) of
-            EQ -> result `seqOrPar` (ScaleEQ (BigNatWithScale (s1 + 1) result)) where
+      multBigNatWithScale (BigNatWithScale scale1 n1) (BigNatWithScale scale2 n2) =
+          case (scale1 `compare` scale2) of
+            EQ -> result `seqOrPar` (ScaleEQ (BigNatWithScale (scale1 + 1) result)) where
               result = n1 `timesBigNat` n2
-              seqOrPar = if s1 <= maxSeq then seq else par
+              seqOrPar = if scale1 <= maxSeq then seq else par
             LT -> ScaleLT
             GT -> ScaleGT
           where
             maxSeq = fromIntegral (natVal (undefined :: Proxy n))
-      sr = multSigns s1 s2
+      signr = multSigns sign1 sign2
       (# wu_prim, wl_prim #) =
         let
           !(W# w1_prim) = w1
@@ -249,8 +249,8 @@ instance KnownNat n => Num (FastMult n) where
           show xl ++ "\n"
     in
       case eqWord# wu_prim (int2Word# 0#) of
-        0# -> FastMult sr (W# wl_prim) (merge l1 l2)
-        _  -> FastMult sr 1 (mergeWithCarry (BigNatWithScale 0 (wordToBigNat2 wu_prim wl_prim)) l1 l2)
+        0# -> FastMult signr (W# wl_prim) (merge l1 l2)
+        _  -> FastMult signr 1 (mergeWithCarry (BigNatWithScale 0 (wordToBigNat2 wu_prim wl_prim)) l1 l2)
   (+) = binaryViaInteger (+)
   (-) = binaryViaInteger (-)
   abs (FastMult _ word l) = FastMult Pos word l
