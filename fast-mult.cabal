@@ -1,5 +1,5 @@
 name:                fast-mult
-version:             0.1.0.1
+version:             0.1.0.2
 synopsis:            Numeric type with asymptotically faster multiplications.
 description:         This numeric type internally reorders multiplications to achieve
                      asymptotically faster multiplication of large numbers of small integers in particular.
