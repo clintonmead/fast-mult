@@ -218,7 +218,7 @@ instance KnownNat n => Num (FastMult n) where
       mergeWithCarry carry xl Strict.Nil = mergeOneCarry carry xl
       mergeWithCarry carry Strict.Nil yl = mergeOneCarry carry yl
       mergeWithCarry carry xl@(x:!xs) yl@(y:!ys) = case multBigNatWithScale x y of
-        ScaleEQ result -> mergeWithCarry result xs ys
+        ScaleEQ result -> carry :! mergeWithCarry result xs ys
         ScaleLT -> contCarry x xs yl
         ScaleGT -> contCarry y ys xl
         where
