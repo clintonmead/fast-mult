@@ -65,15 +65,15 @@ getBigNat (BigNatWithScale _ x) = x
   unsigned machine word and multiply them by item 2 in the list above. Only then if the result overflows we place them in this
   'BigNat' list.
 
-  This is a few examples of "MachineWords -> Scale"
+  This is a few examples of "MachineWords: Scale"
 
-  2 -> 0
-  3 -> 1
-  4 -> 1
-  5 -> 2
-  6..8 -> 2
-  9..16 -> 3
-  17..32 -> 4
+  * 2: 0
+  * 3: 1
+  * 4: 1
+  * 5: 2
+  * 6..8: 2
+  * 9..16: 3
+  * 17..32: 4
 
   etc.
 
@@ -218,7 +218,7 @@ instance KnownNat n => Num (FastMult n) where
       mergeWithCarry carry xl Strict.Nil = mergeOneCarry carry xl
       mergeWithCarry carry Strict.Nil yl = mergeOneCarry carry yl
       mergeWithCarry carry xl@(x:!xs) yl@(y:!ys) = case multBigNatWithScale x y of
-        ScaleEQ result -> mergeWithCarry carry xs ys
+        ScaleEQ result -> mergeWithCarry result xs ys
         ScaleLT -> contCarry x xs yl
         ScaleGT -> contCarry y ys xl
         where
